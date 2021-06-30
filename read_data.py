@@ -11,6 +11,7 @@ from skimage import transform
 import pydicom
 from sklearn.model_selection import train_test_split
 import cv2
+import matplotlib.pyplot as plt
 
 def click_event(event, x, y, flags, param):
     if event == cv2.EVENT_LBUTTONDOWN:
