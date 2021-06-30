@@ -19,6 +19,28 @@ def click_event(event, x, y, flags, param):
         Y.append(x)
         cv2.destroyAllWindows()
 
+def flip_axis(x, axis):
+    x = np.asarray(x).swapaxes(axis, 0)
+    x = x[::-1, ...]
+    x = x.swapaxes(0, axis)
+    return x
+
+def setDicomWinWidthWinCenter(vol_data, winwidth, wincenter):
+    vol_temp = np.copy(vol_data)
+    min = (2 * wincenter - winwidth) / 2.0 + 0.5
+    max = (2 * wincenter + winwidth) / 2.0 + 0.5
+    dFactor = 255.0 / (max - min)
+    
+    vol_temp = ((vol_temp[:]-min)*dFactor).astype('int16')
+
+    min_index = vol_temp < 0
+    vol_temp[min_index] = 0
+    max_index = vol_temp > 255
+    vol_temp[max_index] = 255
+
+    return vol_temp
+
+
 input_folder = r'F:\CT-tesi\Segmentation\1'
 output_file = output_file = os.path.join(input_folder, 'pre_proc.hdf5')
 hdf5_file = h5py.File(output_file, "w")
@@ -43,13 +65,6 @@ vol_seg = mat['SEG1']
 mat = scipy.io.loadmat(pat_addrs['ART'][0])
 vol_art = mat['ART1']
 
-
-def flip_axis(x, axis):
-    x = np.asarray(x).swapaxes(axis, 0)
-    x = x[::-1, ...]
-    x = x.swapaxes(0, axis)
-    return x
-
 vol_bas = vol_bas -1024
 vol_art = vol_art -1024
 
@@ -60,21 +75,6 @@ vol_art_transp = vol_art.transpose([2,0,1])
 vol_bas_flip = flip_axis(vol_bas_transp,1)
 vol_seg_flip = flip_axis(vol_seg_transp,1)
 vol_art_flip = flip_axis(vol_art_transp,1)
-
-def setDicomWinWidthWinCenter(vol_data, winwidth, wincenter):
-    vol_temp = np.copy(vol_data)
-    min = (2 * wincenter - winwidth) / 2.0 + 0.5
-    max = (2 * wincenter + winwidth) / 2.0 + 0.5
-    dFactor = 255.0 / (max - min)
-    
-    vol_temp = ((vol_temp[:]-min)*dFactor).astype('int16')
-
-    min_index = vol_temp < 0
-    vol_temp[min_index] = 0
-    max_index = vol_temp > 255
-    vol_temp[max_index] = 255
-
-    return vol_temp
 
 vol_bas_win = setDicomWinWidthWinCenter(vol_bas_flip, 300, 150)
 
@@ -88,7 +88,6 @@ vol_bas_flip = vol_bas_flip[395:565,...]
 vol_seg_flip = vol_seg_flip[395:565,...]
 vol_art_flip = vol_art_flip[395:565,...]
 vol_bas_win = vol_bas_win[395:565,...]
-
 
 X = []
 Y = []
