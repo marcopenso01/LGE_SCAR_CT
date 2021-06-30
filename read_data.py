@@ -85,6 +85,10 @@ for i in range(0, vol_bas_win.shape[0], 50):
   plt.imshow(vol_bas_win[i,...])
   plt.show()
 
+#for i in range(vol_seg_flip.shape[0]):
+#    if vol_seg_flip[i].max() > 0:
+#        print(i)
+        
 vol_bas_flip = vol_bas_flip[395:565,...]
 vol_seg_flip = vol_seg_flip[395:565,...]
 vol_art_flip = vol_art_flip[395:565,...]
