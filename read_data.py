@@ -121,6 +121,12 @@ print(vol_seg_flip.shape, vol_seg_flip.dtype, vol_seg_flip.min(), vol_seg_flip.m
 print(vol_art_flip.shape, vol_art_flip.dtype, vol_art_flip.min(), vol_art_flip.max())
 print(vol_bas_win.shape, vol_bas_win.dtype, vol_bas_win.min(), vol_bas_win.max())
 
+for i in range(0, vol_bas_win.shape[0], 10):
+  print(i)
+  fig = plt.figure()
+  plt.imshow(vol_bas_win[i,...])
+  plt.show()
+
 num_slices = vol_bas_flip.shape[0]
 size = vol_bas_flip.shape[1:3]
 
