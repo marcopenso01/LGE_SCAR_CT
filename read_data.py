@@ -80,8 +80,8 @@ vol_art_flip = flip_axis(vol_art_transp,1)
 vol_bas_win = setDicomWinWidthWinCenter(vol_bas_flip, 300, 150)
 
 for i in range(0, vol_bas_win.shape[0], 50):
-  print(i)
   fig = plt.figure()
+  plt.title(i)
   plt.imshow(vol_bas_win[i,...])
   plt.show()
 
@@ -122,8 +122,8 @@ print(vol_art_flip.shape, vol_art_flip.dtype, vol_art_flip.min(), vol_art_flip.m
 print(vol_bas_win.shape, vol_bas_win.dtype, vol_bas_win.min(), vol_bas_win.max())
 
 for i in range(0, vol_bas_win.shape[0], 10):
-  print(i)
   fig = plt.figure()
+  plt.title(i)
   plt.imshow(vol_bas_win[i,...])
   plt.show()
 
