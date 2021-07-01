@@ -91,10 +91,10 @@ for i in range(0, vol_bas_win.shape[0], 50):
 
 first_sl = 395
 last_sl = 565
-vol_bas_flip = vol_bas_flip[395:565,...]
-vol_seg_flip = vol_seg_flip[395:565,...]
-vol_art_flip = vol_art_flip[395:565,...]
-vol_bas_win = vol_bas_win[395:565,...]
+vol_bas_flip = vol_bas_flip[first_sl:last_sl,...]
+vol_seg_flip = vol_seg_flip[first_sl:last_sl,...]
+vol_art_flip = vol_art_flip[first_sl:last_sl,...]
+vol_bas_win = vol_bas_win[first_sl:last_sl,...]
 
 X = []
 Y = []
