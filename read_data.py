@@ -117,10 +117,11 @@ cv2.waitKey(0)
 x = abs(int((X[0]+X[1])/2))
 y = abs(int((Y[0]+Y[1])/2))
 
-vol_bas_flip = vol_bas_flip[:,X[0]-110:X[0]+110, Y[0]-110:Y[0]+110]
-vol_seg_flip = vol_seg_flip[:,X[0]-110:X[0]+110, Y[0]-110:Y[0]+110]
-vol_art_flip = vol_art_flip[:,X[0]-110:X[0]+110, Y[0]-110:Y[0]+110]
-vol_bas_win = vol_bas_win[:,X[0]-110:X[0]+110, Y[0]-110:Y[0]+110]
+FWHM = 110
+vol_bas_flip = vol_bas_flip[:,X[0]-FWHM:X[0]+FWHM, Y[0]-FWHM:Y[0]+FWHM]
+vol_seg_flip = vol_seg_flip[:,X[0]-FWHM:X[0]+FWHM, Y[0]-FWHM:Y[0]+FWHM]
+vol_art_flip = vol_art_flip[:,X[0]-FWHM:X[0]+FWHM, Y[0]-FWHM:Y[0]+FWHM]
+vol_bas_win = vol_bas_win[:,X[0]-FWHM:X[0]+FWHM, Y[0]-FWHM:Y[0]+FWHM]
 
 print(vol_bas_flip.shape, vol_bas_flip.dtype, vol_bas_flip.min(), vol_bas_flip.max())
 print(vol_seg_flip.shape, vol_seg_flip.dtype, vol_seg_flip.min(), vol_seg_flip.max())
