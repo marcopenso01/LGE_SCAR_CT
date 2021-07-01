@@ -79,3 +79,6 @@ for i in range(2):
                     plt.show()
                 break
         cv2.destroyAllWindows()
+    myo_mask = im_out1 - im_out2
+    myo_mask[myo_mask>0]=1
+    mask.append(myo_mask)
