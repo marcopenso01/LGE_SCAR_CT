@@ -9,15 +9,15 @@ def paint_draw(event,former_x,former_y,flags,param):
     elif event==cv2.EVENT_MOUSEMOVE:
         if drawing==True:
             if mode==True:
-                cv2.line(img,(current_former_x,current_former_y),(former_x,former_y),(255,255,255),3)
-                cv2.line(image_binary,(current_former_x,current_former_y),(former_x,former_y),(255,255,255),3)
+                cv2.line(img,(current_former_x,current_former_y),(former_x,former_y),(255,255,255),2)
+                cv2.line(image_binary,(current_former_x,current_former_y),(former_x,former_y),(255,255,255),2)
                 current_former_x = former_x
                 current_former_y = former_y
     elif event==cv2.EVENT_LBUTTONUP:
         drawing=False
         if mode==True:
-            cv2.line(img,(current_former_x,current_former_y),(former_x,former_y),(255,255,255),3)
-            cv2.line(image_binary,(current_former_x,current_former_y),(former_x,former_y),(255,255,255),3)
+            cv2.line(img,(current_former_x,current_former_y),(former_x,former_y),(255,255,255),2)
+            cv2.line(image_binary,(current_former_x,current_former_y),(former_x,former_y),(255,255,255),2)
             current_former_x = former_x
             current_former_y = former_y
     return former_x,former_y
@@ -43,7 +43,7 @@ data.create_dataset('mask', [num_slices] + list(size), dtype=np.uint8)
 
 mask = []
 tit=['epi', 'endo']
-for i in range(2):
+for i in range(data['LGEwin'].shape[0]):
     
     for ii in range(2):
         img = data['LGEwin'][i]
