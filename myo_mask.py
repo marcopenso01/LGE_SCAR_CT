@@ -67,7 +67,7 @@ for i in range(Min, Max, 1):
         
         img = data['ART'][i]
         img = np.array(img)
-
+        dim = img.shape[0]
         #scar = data['SEG'][i]
         #max_index = scar > 0
         #pxmax = img.max()
@@ -89,7 +89,7 @@ for i in range(Min, Max, 1):
             if k==27: #Escape KEY
                 if ii==0:
                     
-                    im_out1 = imfill(image_binary, img.shape[0])
+                    im_out1 = imfill(image_binary, dim)
                     im_out1[im_out1>0]=255
                     #fig = plt.figure()
                     #plt.imshow(im_out1)
@@ -97,7 +97,7 @@ for i in range(Min, Max, 1):
                     
                 elif ii==1:
                                             
-                    im_out2 = imfill(image_binary, img.shape[0])
+                    im_out2 = imfill(image_binary, dim)
                     im_out2[im_out2>0]=255
                     #fig = plt.figure()
                     #plt.imshow(im_out2)
