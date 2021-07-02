@@ -36,24 +36,44 @@ def imfill(img, dim):
 path = r'F:\CT-tesi\Segmentation\1\xxx.hdf5'
 data = h5py.File(path, 'r+')
 
-num_slices = data['LGE'].shape[0]
-size = data['LGE'].shape[1:3]
-
-data.create_dataset('mask', [num_slices] + list(size), dtype=np.uint8)
+Min = 0
+Max = 0
+flag = True
+for i in range(data['LGEwin'].shape[0]):
+    if data['SEG'][i].max() > 0:
+        if flag:
+            Min = i
+            flag = False
+        else:
+            Max = i
 
 mask = []
 tit=['epicardium', 'endocardium']
-for i in range(data['LGEwin'].shape[0]):
+for i in range(Min, Max, 1):
     
     for ii in range(2):
         img = data['LGEwin'][i]
-        #img = img[...,np.newaxis]
-        #img = np.concatenate((img,img,img), axis=-1)
-
         img = np.array(img)
-        img = cv2.resize(img, (400, 400), interpolation = cv2.INTER_CUBIC)
+        
+        scar = data['SEG'][i]
+        max_index = scar > 0
+        lge_scar = np.copy(img)
+        lge_scar[max_index] = 255
+        fig = plt.figure()
+        plt.imshow(lge_scar, cmap='gray')
+        plt.title('IMAGE WITH SCAR')
+        
+        scar = data['ART'][i]
+        max_index = scar > 0
+        art_scar = np.copy(img)
+        art_scar[max_index] = 1500
+        fig = plt.figure()
+        plt.imshow(art_scar, cmap='gray')
+        plt.title('IMAGE WITH SCAR')
+        
+        img = cv2.resize(lge_scar, (300, 300), interpolation = cv2.INTER_CUBIC)
 
-        image_binary = np.zeros((img.shape[1], img.shape[0], 1), np.uint8)
+        image_binary = np.zeros((img.shape[0], img.shape[1], 1), np.uint8)
 
         cv2.namedWindow(tit[ii])
         cv2.setMouseCallback(tit[ii],paint_draw)
@@ -66,19 +86,23 @@ for i in range(data['LGEwin'].shape[0]):
                     im_out1 = imfill(image_binary, img.shape[0])
                     im_out1[im_out1>0]=255
                     print(im_out1.shape)
-                    fig = plt.figure()
-                    plt.imshow(im_out1)
-                    plt.show()
+                    #fig = plt.figure()
+                    #plt.imshow(im_out1)
+                    #plt.show()
                     
                 elif ii==1:
                                             
                     im_out2 = imfill(image_binary, img.shape[0])
                     im_out2[im_out2>0]=255
-                    fig = plt.figure()
-                    plt.imshow(im_out2)
-                    plt.show()
+                    #fig = plt.figure()
+                    #plt.imshow(im_out2)
+                    #plt.show()
                 break
         cv2.destroyAllWindows()
     myo_mask = im_out1 - im_out2
     myo_mask[myo_mask>0]=1
     mask.append(myo_mask)
+
+num_slices = data['LGE'].shape[0]
+size = data['LGE'].shape[1:3]
+data.create_dataset('mask', [num_slices] + list(size), dtype=np.uint8)
