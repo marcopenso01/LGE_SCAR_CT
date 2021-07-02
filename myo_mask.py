@@ -50,8 +50,9 @@ for i in range(data['LGEwin'].shape[0]):
 mask = []
 tit=['epicardium', 'endocardium']
 for i in range(Min, Max, 1):
-    
+    print("{}/{}".format(i, Max))
     for ii in range(2):
+        '''
         img = data['LGEwin'][i]
         img = np.array(img)
         
@@ -62,15 +63,19 @@ for i in range(Min, Max, 1):
         fig = plt.figure()
         plt.imshow(lge_scar, cmap='gray')
         plt.title('IMAGE WITH SCAR')
+        '''
         
-        scar = data['ART'][i]
+        img = data['ART'][i]
+        img = np.array(img)
+
+        scar = data['SEG'][i]
         max_index = scar > 0
-        art_scar = np.copy(img)
-        art_scar[max_index] = 1500
-        fig = plt.figure()
-        plt.imshow(art_scar, cmap='gray')
-        plt.title('IMAGE WITH SCAR')
-        
+        pxmax = img.max()
+        img[max_index] = pxmax + 200
+        #fig = plt.figure()
+        #plt.imshow(img, cmap='gray')
+        #plt.title('ARTERIAL WITH SCAR')
+        img = cv2.normalize(src=img, dst=None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)    
         img = cv2.resize(lge_scar, (300, 300), interpolation = cv2.INTER_CUBIC)
 
         image_binary = np.zeros((img.shape[0], img.shape[1], 1), np.uint8)
@@ -85,7 +90,6 @@ for i in range(Min, Max, 1):
                     
                     im_out1 = imfill(image_binary, img.shape[0])
                     im_out1[im_out1>0]=255
-                    print(im_out1.shape)
                     #fig = plt.figure()
                     #plt.imshow(im_out1)
                     #plt.show()
