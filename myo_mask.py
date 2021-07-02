@@ -77,7 +77,7 @@ for i in range(Min, Max, 1):
         #plt.title('ARTERIAL WITH SCAR')
         img = cv2.normalize(src=img, dst=None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)    
         
-        img = cv2.resize(img, (300, 300), interpolation = cv2.INTER_CUBIC)
+        img = cv2.resize(img, (400, 400), interpolation = cv2.INTER_CUBIC)
 
         image_binary = np.zeros((img.shape[0], img.shape[1], 1), np.uint8)
 
