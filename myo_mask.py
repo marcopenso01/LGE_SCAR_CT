@@ -33,7 +33,7 @@ def imfill(img, dim):
     return img | cv2.bitwise_not(im_floodfill)
 
 
-path = r'F:\CT-tesi\Segmentation\1\prova.hdf5'
+path = r'F:\CT-tesi\Segmentation\1\xxx.hdf5'
 data = h5py.File(path, 'r+')
 
 num_slices = data['LGE'].shape[0]
@@ -42,7 +42,7 @@ size = data['LGE'].shape[1:3]
 data.create_dataset('mask', [num_slices] + list(size), dtype=np.uint8)
 
 mask = []
-tit=['epi', 'endo']
+tit=['epicardium', 'endocardium']
 for i in range(data['LGEwin'].shape[0]):
     
     for ii in range(2):
