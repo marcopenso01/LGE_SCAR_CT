@@ -39,7 +39,7 @@ data = h5py.File(path, 'r+')
 Min = 0
 Max = 0
 flag = True
-for i in range(data['LGEwin'].shape[0]):
+for i in range(data['SEG'].shape[0]):
     if data['SEG'][i].max() > 0:
         if flag:
             Min = i
@@ -49,7 +49,7 @@ for i in range(data['LGEwin'].shape[0]):
 
 mask = []
 tit=['epicardium', 'endocardium']
-for i in range(Min, Max, 1):
+for i in range(Min, Max+1, 1):
     print("{}/{}".format(i, Max))
     for ii in range(2):
         '''
@@ -107,7 +107,11 @@ for i in range(Min, Max, 1):
     myo_mask = im_out1 - im_out2
     myo_mask[myo_mask>0]=1
     mask.append(myo_mask)
+    plt.figure()
+    plt.imshow(myo_mask)
 
 num_slices = data['LGE'].shape[0]
 size = data['LGE'].shape[1:3]
 data.create_dataset('mask', [num_slices] + list(size), dtype=np.uint8)
+for ii in range(len(mask)):
+    data['mask'][ii] = mask[ii]
