@@ -36,6 +36,17 @@ def imfill(img, dim):
 path = r'F:\CT-tesi\Segmentation\1\xxx.hdf5'
 data = h5py.File(path, 'r+')
 
+'''
+for i in range(16,72,1):
+    a = data['LGEwin'][i]
+    b = data['SEG'][i]
+    index = b>0
+    a[index] = a.max()+200
+    plt.figure()
+    plt.imshow(a)
+    plt.title(i)
+'''
+
 Min = 0
 Max = 0
 flag = True
@@ -47,7 +58,8 @@ for i in range(data['SEG'].shape[0]):
         else:
             Max = i
 
-mask = []
+mask_myo = []
+mask_epi = []
 tit=['epicardium', 'endocardium']
 for i in range(Min, Max+1, 1):
     print("{}/{}".format(i, Max))
@@ -66,6 +78,9 @@ for i in range(Min, Max+1, 1):
         '''
         
         img = data['ART'][i]
+        b = data['SEG'][i]
+        index = b>0
+        img[index] = img.max()+200
         img = np.array(img)
         dim = img.shape[0]
         #scar = data['SEG'][i]
@@ -104,14 +119,18 @@ for i in range(Min, Max+1, 1):
                     #plt.show()
                 break
         cv2.destroyAllWindows()
-    myo_mask = im_out1 - im_out2
-    myo_mask[myo_mask>0]=1
-    mask.append(myo_mask)
+    mask = im_out1 - im_out2
+    im_out1[im_out1>0]=1
+    mask_epi.append(im_out1)
+    mask[mask>0]=1
+    mask_myo.append(mask)
     plt.figure()
-    plt.imshow(myo_mask)
+    plt.imshow(mask)
 
-num_slices = data['LGE'].shape[0]
+num_slices = len(mask_myo)
 size = data['LGE'].shape[1:3]
-data.create_dataset('mask', [num_slices] + list(size), dtype=np.uint8)
-for ii in range(len(mask)):
-    data['mask'][ii] = mask[ii]
+data.create_dataset('mask_epi', [num_slices] + list(size), dtype=np.uint8)
+data.create_dataset('mask_myo', [num_slices] + list(size), dtype=np.uint8)
+for ii in range(len(mask_myo)):
+    data['mask_myo'][ii] = mask_myo[ii]
+    data['mask_epi'][ii] = mask_epi[ii]
