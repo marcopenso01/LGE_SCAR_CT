@@ -36,17 +36,6 @@ def imfill(img, dim):
 path = r'F:\CT-tesi\Segmentation\1\xxx.hdf5'
 data = h5py.File(path, 'r+')
 
-'''
-for i in range(16,72,1):
-    a = data['LGEwin'][i]
-    b = data['SEG'][i]
-    index = b>0
-    a[index] = a.max()+200
-    plt.figure()
-    plt.imshow(a)
-    plt.title(i)
-'''
-
 Min = 0
 Max = 0
 flag = True
@@ -58,6 +47,15 @@ for i in range(data['SEG'].shape[0]):
         else:
             Max = i
 
+for i in range(Min,Max+1,1):
+    a = data['LGEwin'][i]
+    b = data['SEG'][i]
+    index = b>0
+    a[index] = a.max()+200
+    plt.figure()
+    plt.imshow(a)
+    plt.title(i)
+            
 mask_myo = []
 mask_epi = []
 tit=['epicardium', 'endocardium']
@@ -134,3 +132,4 @@ data.create_dataset('mask_myo', [num_slices] + list(size), dtype=np.uint8)
 for ii in range(len(mask_myo)):
     data['mask_myo'][ii] = mask_myo[ii]
     data['mask_epi'][ii] = mask_epi[ii]
+data.close()
