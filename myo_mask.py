@@ -76,9 +76,11 @@ for i in range(Min, Max+1, 1):
         '''
         
         img = data['ART'][i]
-        b = data['SEG'][i]
-        index = b>0
-        img[index] = img.max()+200
+        index=img<-800
+        img[index]=0
+        #b = data['SEG'][i]
+        #index = b>0
+        #img[index] = img.max()+200
         img = np.array(img)
         dim = img.shape[0]
         #scar = data['SEG'][i]
@@ -89,7 +91,8 @@ for i in range(Min, Max+1, 1):
         #plt.imshow(img, cmap='gray')
         #plt.title('ARTERIAL WITH SCAR')
         img = cv2.normalize(src=img, dst=None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)    
-        
+        clahe = cv2.createCLAHE(clipLimit = 1.6)
+        img = clahe.apply(img)
         img = cv2.resize(img, (400, 400), interpolation = cv2.INTER_CUBIC)
 
         image_binary = np.zeros((img.shape[0], img.shape[1], 1), np.uint8)
