@@ -43,7 +43,7 @@ def setDicomWinWidthWinCenter(vol_data, winwidth, wincenter):
 
 
 input_folder = r'F:\CT-tesi\Segmentation\1'
-output_file = output_file = os.path.join(input_folder, 'pre_proc.hdf5')
+output_file = os.path.join(input_folder, 'pre_proc.hdf5')
 hdf5_file = h5py.File(output_file, "w")
 
 pat_addrs = {}
