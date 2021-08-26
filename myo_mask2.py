@@ -3,17 +3,11 @@ import numpy as np
 import logging
 import h5py
 from skimage import transform
-from skimage import util
-from skimage import measure
 import cv2
 from PIL import Image
 import shutil
-import png
-import itertools
 import pydicom # for reading dicom files
-import pandas as pd # for some simple data analysis (right now, just to load in the labels data and quickly reference it)
 import math as mt
-import matplotlib.pyplot as plt
 
 drawing=False # true if mouse is pressed
 mode=True
