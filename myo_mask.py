@@ -3,16 +3,11 @@ Created on Mon Nov 22 15:44:43 2021
 
 @author: Marco Penso
 """
-
 import scipy
 import scipy.io
 import os
 import numpy as np
-import logging
 import h5py
-from skimage import transform
-import pydicom
-from sklearn.model_selection import train_test_split
 import cv2
 import matplotlib.pyplot as plt
 import skimage.morphology, skimage.data
