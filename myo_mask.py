@@ -3,6 +3,7 @@ Created on Mon Nov 22 15:44:43 2021
 
 @author: Marco Penso
 """
+
 import scipy
 import scipy.io
 import os
@@ -157,7 +158,10 @@ def crop_or_pad_slice_to_size_specific_point(slice, nx, ny, cx, cy):
         return slice_cropped
 
 
-input_folder = r'F:\CT-tesi\Segmentation\1'
+input_folder = r'F:\CT-tesi\Segmentation'
+patient = 3
+
+input_folder = os.path.join(input_folder, str(patient))
                
 mat = scipy.io.loadmat(os.path.join(input_folder, 'ART1.mat'))
 vol_art = mat['ART1']
@@ -182,6 +186,7 @@ art_imgs = np.asarray(art_imgs)
 seg_imgs = np.asarray(seg_imgs)
 
 # select center LV
+print('select center LV')
 art_crop = []
 seg_crop = []
 X = []
@@ -197,21 +202,25 @@ for i in range(len(art_imgs)):
     art_crop.append(crop_or_pad_slice_to_size_specific_point(art_imgs[i,...], 250, 250, X[0], Y[0]))
     seg_crop.append(crop_or_pad_slice_to_size_specific_point(seg_imgs[i,...], 250, 250, X[0], Y[0]))
 
-art_crop = np.asarray(art_crop)
-seg_crop = np.asarray(seg_crop)
+art_crop = np.asarray(art_crop).astype('float32')
+seg_crop = np.asarray(seg_crop).astype('uint8')
 
-# segmentation Myo 
-myo = []
-mask_myo = []
-segments = []
-mask_segments = []
-seg_cropped = []
-mask_seg_cropped = []
-AHA = []
+# segmentation Myo
+myo = []                         # myo 
+mask_myo = []                    # maschera binaria myo 
+segments = []                    # segmento myo 
+mask_segments = []               # maschera binaria segmento myo
+seg_cropped = []                 # segmento myo croppato
+mask_seg_cropped = []            # maschera binaria segmento myo croppato
+AHA = []                         # 1 se segmento definito secondo AHA model, 0 altrimenti
+scar = []                        # maschera binaria scar
+mask_segment_scar = []           # maschera segmento myo + scar
+scar_cropped = []                # maschera segmento myo + scar, croppato
+scar_area = []                   # percentuale area scar in segmento myo 
 
 
 tit=['epicardium', 'endocardium']
-for i in range(len(art_crop)):
+for i in range(1, len(art_crop)-1):
     print("{}/{}".format(i, len(art_crop)))
     print('---select the point where the RV wall joins the LV')
     X = []
@@ -229,6 +238,8 @@ for i in range(len(art_crop)):
         contours, _ = cv2.findContours(obj, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         img = cv2.normalize(src=img, dst=None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
         img = cv2.drawContours(img, contours, -1, (0, 255, 0), 2)
+        clahe = cv2.createCLAHE(clipLimit = 1.5)
+        img = clahe.apply(img)
         img = cv2.resize(img, (400, 400), interpolation = cv2.INTER_CUBIC)
         image_binary = np.zeros((img.shape[0], img.shape[1], 1), np.uint8)
         cv2.namedWindow(tit[ii])
@@ -252,12 +263,14 @@ for i in range(len(art_crop)):
                     cY = int(M["m01"] / M["m00"])
                     
                 break
-        cv2.destroyAllWindows()    
+        cv2.destroyAllWindows()  
+
     im_out1[im_out1>0]=1
     im_out2[im_out2>0]=1
     mask = im_out1 - im_out2
     plt.figure()
     plt.imshow(mask)
+    plt.title(i)
     
     # AHA model
     N = 6
@@ -268,7 +281,7 @@ for i in range(len(art_crop)):
     cv2.drawContours(ref, contours, 0, 255, 1);
     for val in range(4):
         if val!=0:
-            phi = random.randint(1,350)
+            phi = random.randint(1,355)
         for n in range(N):
             tmp = np.zeros_like(art_crop[i,...])
             for xx in range(2):
@@ -279,13 +292,29 @@ for i in range(len(art_crop)):
                           int(cY-np.sin(theta)*ref.shape[0])), 255, 1);
             tmp = tmp[..., np.newaxis].astype(np.uint8)
             tmp = imfill(tmp, tmp.shape[0])
+            if tmp.min() == 255:
+                tmp = np.zeros_like(art_crop[i,...])
+                for xx in range(2):
+                    theta = (n+xx)*(360/N)-90-(phi+1)
+                    theta *= np.pi/180.0
+                    cv2.line(tmp, (cX, cY),
+                             (int(cX+np.cos(theta)*ref.shape[0]),
+                              int(cY-np.sin(theta)*ref.shape[0])), 255, 1);
+                tmp = tmp[..., np.newaxis].astype(np.uint8)
+                tmp = imfill(tmp, tmp.shape[0])
             tmp2 = np.invert(tmp)
             if np.count_nonzero(tmp) > np.count_nonzero(tmp2):
                 tmp = tmp2
             tmp[tmp>0]=1
-            #binary mask of the segment
+            # binary mask of the segment
             out = tmp & mask        
             mask_segments.append(out.astype(np.uint8))
+            # scar
+            scar.append((seg_crop[i,...].astype(np.uint8)))
+            # mask segment with scar
+            a = out.astype(np.uint8)
+            b = seg_crop[i,...].astype(np.uint8)
+            mask_segment_scar.append((a+b)*a)
             #crop mask segment
             contours, hier = cv2.findContours(out, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             top_left_x = 1000
@@ -316,16 +345,27 @@ for i in range(len(art_crop)):
             elif lenn > nn:
                 out_crop = cv2.resize(out_crop, (nn, nn), interpolation=cv2.INTER_NEAREST)
             mask_seg_cropped.append(out_crop.astype(np.uint8))
+            # scar_cropped
+            scarcrop = crop_or_pad_slice_to_size_specific_point((a+b)*a,lenn,lenn,cx,cy)
+            if lenn < nn:
+                scarcrop = crop_or_pad_slice_to_size(scarcrop, nn, nn)
+            elif lenn > nn:
+                scarcrop = cv2.resize(scarcrop, (nn, nn), interpolation=cv2.INTER_NEAREST)
+            scarcrop = scarcrop.astype(np.uint8)
+            scar_cropped.append(scarcrop)
+            # % scar
+            print(np.sum(scarcrop == 2), np.sum(scarcrop > 0))
+            scar_area.append(int(np.sum(scarcrop == 2)*100/np.sum(scarcrop > 0)))
             #segment
             seg = art_crop[i,...]*out
             segments.append(seg.astype(np.float32))
             #crop segment
-            seg_crop = crop_or_pad_slice_to_size_specific_point(seg,lenn,lenn,cx,cy)
+            segcrop = crop_or_pad_slice_to_size_specific_point(seg,lenn,lenn,cx,cy)
             if lenn < nn:
-                seg_crop = crop_or_pad_slice_to_size(seg_crop, nn, nn)
+                segcrop = crop_or_pad_slice_to_size(segcrop, nn, nn)
             elif lenn > nn:
-                seg_crop = cv2.resize(seg_crop, (nn, nn), interpolation=cv2.INTER_NEAREST)
-            seg_cropped.append(seg_crop.astype(np.float32))
+                segcrop = cv2.resize(segcrop, (nn, nn), interpolation=cv2.INTER_NEAREST)
+            seg_cropped.append(segcrop.astype(np.float32))
             #mask myo
             mask_myo.append(mask.astype(np.uint8))
             #myo
@@ -335,7 +375,6 @@ for i in range(len(art_crop)):
                 AHA.append(1)
             else:
                 AHA.append(0)
-            
 
 print('---Segmentation correctly completed')
 print('Saving data...')
@@ -343,7 +382,9 @@ output_file = os.path.join(input_folder, 'tesi_tac.hdf5')
 hdf5_file = h5py.File(output_file, "w")
 n1 = art_crop.shape[1]
 n2 = seg_cropped[0].shape[0]
+#dt = h5py.special_dtype(vlen=str)
 
+hdf5_file.create_dataset('paz', (len(myo),), dtype=np.uint8)
 hdf5_file.create_dataset('myo', [len(myo)] + [n1, n1], dtype=np.float32)
 hdf5_file.create_dataset('mask_myo', [len(mask_myo)] + [n1, n1], dtype=np.uint8)
 hdf5_file.create_dataset('segments', [len(segments)] + [n1, n1], dtype=np.float32)
@@ -351,8 +392,14 @@ hdf5_file.create_dataset('mask_segments', [len(mask_segments)] + [n1, n1], dtype
 hdf5_file.create_dataset('seg_cropped', [len(segments)] + [n2, n2], dtype=np.float32)
 hdf5_file.create_dataset('mask_seg_cropped', [len(mask_segments)] + [n2, n2], dtype=np.uint8)
 hdf5_file.create_dataset('AHA', (len(AHA),), dtype=np.uint8)
+hdf5_file.create_dataset('scar', [len(scar)] + [n1, n1], dtype=np.uint8)
+hdf5_file.create_dataset('mask_segment_scar', [len(mask_segment_scar)] + [n1, n1], dtype=np.uint8)
+hdf5_file.create_dataset('scar_cropped', [len(scar_cropped)] + [n2, n2], dtype=np.uint8)
+hdf5_file.create_dataset('scar_area', (len(scar_area),), dtype=np.uint8)
+
 
 for i in range(len(myo)):
+     hdf5_file['paz'][i, ...] = patient
      hdf5_file['myo'][i, ...] = myo[i]
      hdf5_file['mask_myo'][i, ...] = mask_myo[i]
      hdf5_file['segments'][i, ...] = segments[i]
@@ -360,6 +407,11 @@ for i in range(len(myo)):
      hdf5_file['seg_cropped'][i, ...] = seg_cropped[i]
      hdf5_file['mask_seg_cropped'][i, ...] = mask_seg_cropped[i]
      hdf5_file['AHA'][i, ...] = AHA[i]
+     hdf5_file['scar'][i, ...] = scar[i]
+     hdf5_file['mask_segment_scar'][i, ...] = mask_segment_scar[i]
+     hdf5_file['scar_cropped'][i, ...] = scar_cropped[i]
+     hdf5_file['scar_area'][i, ...] = scar_area[i]
+     
 # After loop:
 hdf5_file.close()
     
