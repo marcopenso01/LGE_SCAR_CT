@@ -1,0 +1,103 @@
+path_lge = 'F:\CT-tesi\paz1\LGE';
+path_art = 'F:\CT-tesi\paz1\arterial';
+path_seg = 'F:\CT-tesi\paz1\Nuova cartella\seg';
+%load('F:\CT-tesi\paz28\SAVE\LinearTransform_6.mat')
+a= AffineTransform_double_3_3;
+trans = affine3d([-a(1,1) -a(4,1) -a(7,1) 0; -a(2,1) -a(5,1) -a(8,1) 0; a(3,1) a(6,1) a(9,1) 0; 0 0 0 1]);
+
+file = dir(path_lge);
+voll=cell(length(file)-2,1);
+for i=3:length(file)
+    img_path = fullfile(path_lge,file(i).name);
+    voll{i-2,1} = dicomread(img_path);
+end
+I = [];
+for i=1:length(voll)
+    I = cat(3, I, voll{i,1});
+end
+% I = I-1024;
+vol_lge = imwarp(I,trans);
+
+% vol8 = cell(size(I,3),1);
+% for n=1:size(I,3)
+%     vol8{n,1} = uint8(255 * mat2gray(I(:,:,n)));
+% end
+% Vol = cat(4, vol8{(1:length(vol8)),1});
+% implay(Vol)
+
+% vol_temp = I;
+% minn = (2 * 150 - 300) / 2.0 + 0.5;
+% maxx = (2 * 150 + 300) / 2.0 + 0.5;
+% dFactor = 255.0 / (maxx - minn);
+% for i=1:size(I,3)
+%     vol_temp(:,:,i) = (vol_temp(:,:,i)-minn)*dFactor;
+% end
+% vol_temp(vol_temp<0)=0;
+% vol_temp(vol_temp>255)=255;
+% vol_temp = uint8(vol_temp);
+
+file = dir(path_art);
+voll=cell(length(file)-2,1);
+for i=3:length(file)
+    img_path = fullfile(path_art,file(i).name);
+    voll{i-2,1} = dicomread(img_path);
+end
+I = [];
+for i=1:length(voll)
+    I = cat(3, I, voll{i,1});
+end
+vol_art = imwarp(I,trans);
+
+file = dir(path_seg);
+voll=cell(length(file)-2,1);
+for i=3:length(file)
+    img_path = fullfile(path_seg,file(i).name);
+    voll{i-2,1} = dicomread(img_path);
+end
+I = [];
+for i=1:length(voll)
+    I = cat(3, I, voll{i,1});
+end
+vol_seg = imwarp(I,trans);
+%O2 = permute(O,[3 2 1]);
+
+% vol8_2 = cell(size(O2,3),1);
+% for n=1:size(O2,3)
+%     vol8_2{n,1} = uint8(255 * mat2gray(O2(:,:,n)));
+% end
+% Vol2 = cat(4, vol8_2{(1:length(vol8_2)),1});
+% implay(Vol2)
+
+% [X, meta] = nrrdread(path_seg);
+% Xout = imwarp(X,trans);
+% Xout = permute(Xout,[3 2 1]);
+
+% vol8 = cell(size(Xout,3),1);
+% for n=1:size(Xout,3)
+%     vol8{n,1} = uint8(255 * mat2gray(Xout(:,:,n)));
+% end
+% Vol2 = cat(4, vol8{(1:length(vol8)),1});
+% implay(Vol2)
+
+% file2 = dir(path_seg);
+% voll2=cell(length(file2)-2,1);
+% for i=3:length(file2)
+%     img_path = fullfile(path_seg,file2(i).name);
+%     voll2{i-2,1} = dicomread(img_path);
+% end
+% S = [];
+% for i=1:length(voll2)
+%     S = cat(3, S, voll2{i,1});
+% end
+% 
+% O2 = imwarp(S,trans);
+% 
+% D = [];
+% for i=1:length(O2)
+%     b = O2(:,:,i);
+%     b = uint8(255 * mat2gray(b));
+%     b(Xout(:,:,i)>0)=255;
+%     D = cat(3, D, b);
+% end
+% Vol2 = cat(4, D);
+% implay(Vol2)
