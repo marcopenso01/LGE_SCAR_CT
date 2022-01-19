@@ -155,3 +155,33 @@ for b_i in range(5):
                 break
                 
         data.close()
+
+    #create hdf5 file
+    print('saving file...')
+    hdf5_file = h5py.File(os.path.join(path, 'tac_fold'+str(b_i)+'.hdf5'), "w")
+    
+    hdf5_file.create_dataset('paz_test', (len(paz_test),), dtype=np.uint8)
+    hdf5_file.create_dataset('segs_test', [len(segs_test)] + [85, 85], dtype=np.float32)
+    hdf5_file.create_dataset('out_test', (len(out_test),), dtype=np.uint8)
+    hdf5_file.create_dataset('paz_tr', (len(paz_tr),), dtype=np.uint8)
+    hdf5_file.create_dataset('segs_tr', [len(segs_tr)] + [85, 85], dtype=np.float32)
+    hdf5_file.create_dataset('out_tr', (len(out_tr),), dtype=np.uint8)
+    hdf5_file.create_dataset('paz_val', (len(paz_val),), dtype=np.uint8)
+    hdf5_file.create_dataset('segs_val', [len(segs_val)] + [85, 85], dtype=np.float32)
+    hdf5_file.create_dataset('out_vak', (len(out_val),), dtype=np.uint8)
+    
+    for i in range(len(paz_test)):
+         hdf5_file['paz_test'][i, ...] = paz_test[i]
+         hdf5_file['segs_test'][i, ...] = segs_test[i]
+         hdf5_file['out_test'][i, ...] = out_test[i]
+         
+    for i in range(len(paz_tr)):
+         hdf5_file['paz_tr'][i, ...] = paz_tr[i]
+         hdf5_file['segs_tr'][i, ...] = segs_tr[i]
+         hdf5_file['out_tr'][i, ...] = out_tr[i]
+
+    for i in range(len(paz_val)):
+         hdf5_file['paz_val'][i, ...] = paz_val[i]
+         hdf5_file['segs_val'][i, ...] = segs_val[i]
+         hdf5_file['out_val'][i, ...] = out_val[i]
+    hdf5_file.close()
