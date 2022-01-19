@@ -32,6 +32,7 @@ def standardize_image(image, mask):
     
     
 path = r'F:/CT-tesi/Pre-proc'
+out_path r'F:/CT-tesi/data'
 
 n_paz = len(os.listdir(path))
 ind_paz = np.arange(n_paz)
@@ -84,19 +85,20 @@ for b_i in range(5):
                     img = standardize_image(data['seg_cropped'][i], data['mask_seg_cropped'][i])
                     segs_test.append(img)
                     out_test.append(1)
+                    paz_test.append(data['paz'][i])
                 elif data['scar_area'][i] == 0:
                     img = standardize_image(data['seg_cropped'][i], data['mask_seg_cropped'][i])
                     segs_test.append(img)
                     out_test.append(0)
-                paz.append(data['paz'][i])
+                    paz_test.append(data['paz'][i])
                 
         data.close()
     
     # train patients
     for zz in range(len(train_ind)):
         
-        print('processing train patients: %s' % os.listdir(path)[test_ind[zz]])
-        data = h5py.File(os.path.join(path, os.listdir(path)[test_ind[zz]], 'tesi_tac.hdf5'), "r")
+        print('processing train patients: %s' % os.listdir(path)[train_ind[zz]])
+        data = h5py.File(os.path.join(path, os.listdir(path)[train_ind[zz]], 'tesi_tac.hdf5'), "r")
         #data.keys()
         n_file = len(data['myo'])
         
@@ -127,8 +129,8 @@ for b_i in range(5):
     # val patients
     for zz in range(len(val_ind)):
         
-        print('processing val patients: %s' % os.listdir(path)[test_ind[zz]])
-        data = h5py.File(os.path.join(path, os.listdir(path)[test_ind[zz]], 'tesi_tac.hdf5'), "r")
+        print('processing val patients: %s' % os.listdir(path)[val_ind[zz]])
+        data = h5py.File(os.path.join(path, os.listdir(path)[val_ind[zz]], 'tesi_tac.hdf5'), "r")
         #data.keys()
         n_file = len(data['myo'])
         
@@ -158,7 +160,7 @@ for b_i in range(5):
 
     #create hdf5 file
     print('saving file...')
-    hdf5_file = h5py.File(os.path.join(path, 'tac_fold'+str(b_i)+'.hdf5'), "w")
+    hdf5_file = h5py.File(os.path.join(out_path, 'tac_fold'+str(b_i)+'.hdf5'), "w")
     
     hdf5_file.create_dataset('paz_test', (len(paz_test),), dtype=np.uint8)
     hdf5_file.create_dataset('segs_test', [len(segs_test)] + [85, 85], dtype=np.float32)
@@ -168,7 +170,7 @@ for b_i in range(5):
     hdf5_file.create_dataset('out_tr', (len(out_tr),), dtype=np.uint8)
     hdf5_file.create_dataset('paz_val', (len(paz_val),), dtype=np.uint8)
     hdf5_file.create_dataset('segs_val', [len(segs_val)] + [85, 85], dtype=np.float32)
-    hdf5_file.create_dataset('out_vak', (len(out_val),), dtype=np.uint8)
+    hdf5_file.create_dataset('out_val', (len(out_val),), dtype=np.uint8)
     
     for i in range(len(paz_test)):
          hdf5_file['paz_test'][i, ...] = paz_test[i]
