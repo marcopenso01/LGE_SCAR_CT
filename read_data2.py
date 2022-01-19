@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import skimage.morphology, skimage.data
 import math
 import random
+import pydicom
 
 X = []
 Y = []
@@ -152,37 +153,89 @@ def crop_or_pad_slice_to_size_specific_point(slice, nx, ny, cx, cy):
         return slice_cropped
 
 
-input_folder = r'F:\CT-tesi\Segmentation'
-patient = 47
+input_folder = r'F:/CT-tesi/Pre-proc'
+patient = 30
 
-input_folder = os.path.join(input_folder, str(patient))
-               
-mat = scipy.io.loadmat(os.path.join(input_folder, 'ART1.mat'))
-vol_art = mat['ART1']
-mat = scipy.io.loadmat(os.path.join(input_folder, 'SEG1.mat'))
-vol_seg = mat['SEG1']
+input_folder = os.path.join(input_folder, 'paz' + str(patient))
+            
+#mat = scipy.io.loadmat(os.path.join(input_folder, 'vol_art.mat'))
+#vol_art = mat['vol_art']
+#mat = scipy.io.loadmat(os.path.join(input_folder, 'vol_seg.mat'))
+#vol_seg = mat['vol_seg']
+#mat = scipy.io.loadmat(os.path.join(input_folder, 'vol_lge.mat'))
+#vol_lge = mat['vol_lge']
 
-vol_art = vol_art -1024
+#vol_art = vol_art -1024
 
-vol_art = flip_axis(vol_art.transpose([2,0,1]),1)
-vol_seg = flip_axis(vol_seg.transpose([2,0,1]),1)
+path_art = os.path.join(input_folder, 'ART')
+path_seg = os.path.join(input_folder, 'SEG')
+path_lge = os.path.join(input_folder, 'LGE')
+
+vol_art = []
+vol_seg = []
+vol_lge = []
+
+for i in range(len(os.listdir(path_art))):
+    dcmPath = os.path.join(path_art, os.listdir(path_art)[i])
+    data_row_img = pydicom.dcmread(dcmPath)
+    vol_art.append(data_row_img.pixel_array)
+    
+    dcmPath = os.path.join(path_seg, os.listdir(path_seg)[i])
+    data_row_img = pydicom.dcmread(dcmPath)
+    vol_seg.append(data_row_img.pixel_array)
+    
+    dcmPath = os.path.join(path_lge, os.listdir(path_lge)[i])
+    data_row_img = pydicom.dcmread(dcmPath)
+    vol_lge.append(data_row_img.pixel_array)
+
+vol_art = np.asarray(vol_art)
+vol_seg = np.asarray(vol_seg).astype(np.uint8)
+vol_lge = np.asarray(vol_lge)
+
+#for i in range(len(vol_art)):
+#    plt.figure()
+#    plt.imshow(vol_art[i])
+
+#set shirt-axis
+vol_art = vol_art.transpose([2,1,0])
+vol_seg = vol_seg.transpose([2,1,0])
+vol_lge = vol_lge.transpose([2,1,0])
+
+#vol_art = vol_art.transpose([1,0,2])
+#vol_seg = vol_seg.transpose([1,0,2])
+#vol_lge = vol_lge.transpose([1,0,2])
 
 art_imgs = []
 seg_imgs = []
-
+lge_imgs = []
 for i in range(len(vol_seg)):
     if vol_seg[i,...].max() != 0:
-        print(i, vol_seg[i,...].max())
+        if vol_seg[i,...].max() > 1:
+            print('attention !!! - max value is', vol_seg[i,...].max(), 'for image', i)
         art_imgs.append(vol_art[i,...])
         seg_imgs.append(vol_seg[i,...])
+        lge_imgs.append(vol_lge[i,...])
+print('tot identified images:', len(art_imgs))
+
+for i in range(len(art_imgs)):
+    art_imgs[i]= np.rot90(art_imgs[i])
+    seg_imgs[i]= np.rot90(seg_imgs[i])
+    lge_imgs[i]= np.rot90(lge_imgs[i])
+    
+    #art_imgs[i]= flip_axis(art_imgs[i],0)
+    #seg_imgs[i]= flip_axis(seg_imgs[i],0)
+    #lge_imgs[i]= flip_axis(lge_imgs[i],0)
 
 art_imgs = np.asarray(art_imgs)
 seg_imgs = np.asarray(seg_imgs)
+lge_imgs = np.asarray(lge_imgs)
 
+sz_crop=240
 # select center LV
 print('select center LV')
 art_crop = []
 seg_crop = []
+lge_crop = []
 X = []
 Y = []
 img = art_imgs[len(art_imgs)//2,...].copy()
@@ -193,23 +246,46 @@ cv2.setMouseCallback("image", click_event)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
 for i in range(len(art_imgs)):
-    art_crop.append(crop_or_pad_slice_to_size_specific_point(art_imgs[i,...], 250, 250, X[0], Y[0]))
-    seg_crop.append(crop_or_pad_slice_to_size_specific_point(seg_imgs[i,...], 250, 250, X[0], Y[0]))
+    art_crop.append(crop_or_pad_slice_to_size_specific_point(art_imgs[i,...], sz_crop, sz_crop, X[0], Y[0]))
+    seg_crop.append(crop_or_pad_slice_to_size_specific_point(seg_imgs[i,...], sz_crop, sz_crop, X[0], Y[0]))
+    lge_crop.append(crop_or_pad_slice_to_size_specific_point(lge_imgs[i,...], sz_crop, sz_crop, X[0], Y[0]))
+
+if art_crop[0].shape[0] != sz_crop or art_crop[0].shape[1] != sz_crop:
+    for i in range(len(art_crop)):
+        art_crop[i] = crop_or_pad_slice_to_size(art_crop[i], sz_crop, sz_crop)
+        seg_crop[i] = crop_or_pad_slice_to_size(seg_crop[i], sz_crop, sz_crop)
+        lge_crop[i] = crop_or_pad_slice_to_size(lge_crop[i], sz_crop, sz_crop)
 
 art_crop = np.asarray(art_crop).astype('float32')
+lge_crop = np.asarray(lge_crop).astype('float32')
 seg_crop = np.asarray(seg_crop).astype('uint8')
 
 '''
-for i in range(len(art_crop)):
-    img = art_crop[i,...].copy()
+for i in range(len(lge_crop)):
+    
+    img1 = art_crop[i,...].copy()
+    img2 = lge_crop[i,...].copy()
     obj = cv2.normalize(src=seg_crop[i,...], dst=None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
     contours, _ = cv2.findContours(obj, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    img = cv2.normalize(src=img, dst=None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
-    img = cv2.drawContours(img, contours, -1, (0, 255, 0), 2)
     clahe = cv2.createCLAHE(clipLimit = 1.8)
-    img = clahe.apply(img)
-    plt.figure()
-    plt.imshow(img)
+    
+    img1 = cv2.normalize(src=img1, dst=None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+    img1 = cv2.drawContours(img1, contours, -1, (0, 255, 0), 2)
+    img2 = cv2.normalize(src=img2, dst=None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+    img2 = cv2.drawContours(img2, contours, -1, (0, 255, 0), 2)
+    img1 = clahe.apply(img1)
+    img2 = clahe.apply(img2)
+    
+    fig = plt.figure()
+    ax1 = fig.add_subplot(121)
+    ax1.set_axis_off()
+    ax1.imshow(img1)
+    ax1.title.set_text(str(i))
+    ax2 = fig.add_subplot(122)
+    ax2.set_axis_off()
+    ax2.imshow(img2)
+    plt.show()
+
 '''
 # segmentation Myo
 myo = []                         # myo 
@@ -222,11 +298,11 @@ AHA = []                         # 1 se segmento definito secondo AHA model, 0 a
 scar = []                        # maschera binaria scar
 mask_segment_scar = []           # maschera segmento myo + scar
 scar_cropped = []                # maschera segmento myo + scar, croppato
-scar_area = []                   # percentuale area scar in segmento myo 
+scar_area = []                   # percentuale area scar in segmento myo
 
 
 tit=['epicardium', 'endocardium','scar']
-for i in range(3, len(art_crop)-3):
+for i in range(1, len(art_crop)-1):
     print("{}/{}".format(i, len(art_crop)))
     print('---select the point where the RV wall joins the LV')
     X = []
@@ -238,12 +314,18 @@ for i in range(3, len(art_crop)-3):
     cv2.waitKey(0)
     print('---Segmenting myocardium:')
     for ii in range(3):
-        img = art_crop[i,...].copy()
-        dim = img.shape[0]
-        obj = cv2.normalize(src=seg_crop[i,...], dst=None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
-        contours, _ = cv2.findContours(obj, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        img = cv2.normalize(src=img, dst=None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
-        img = cv2.drawContours(img, contours, -1, (0, 255, 0), 2)
+        if ii != 2:
+            img = art_crop[i,...].copy()
+            dim = img.shape[0]
+            img = cv2.normalize(src=img, dst=None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+            
+        else:
+            img = art_crop[i,...].copy()
+            dim = img.shape[0]
+            obj = cv2.normalize(src=seg_crop[i,...], dst=None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+            contours, _ = cv2.findContours(obj, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            img = cv2.normalize(src=img, dst=None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+            img = cv2.drawContours(img, contours, -1, (0, 255, 0), 2)
         clahe = cv2.createCLAHE(clipLimit = 1.5)
         img = clahe.apply(img)
         img = cv2.resize(img, (400, 400), interpolation = cv2.INTER_CUBIC)
@@ -283,6 +365,7 @@ for i in range(3, len(art_crop)-3):
     plt.figure()
     plt.imshow(mask)
     plt.title(i)
+    
         
     # AHA model
     N = 6
@@ -291,7 +374,7 @@ for i in range(3, len(art_crop)-3):
     contours, _ = cv2.findContours(im_out1,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
     ref = np.zeros_like(im_out1)
     cv2.drawContours(ref, contours, 0, 255, 1);
-    for val in range(4):
+    for val in range(3):
         if val!=0:
             phi = random.randint(1,355)
         for n in range(N):
@@ -356,6 +439,8 @@ for i in range(3, len(art_crop)-3):
                 out_crop = crop_or_pad_slice_to_size(out_crop, nn, nn)
             elif lenn > nn:
                 out_crop = cv2.resize(out_crop, (nn, nn), interpolation=cv2.INTER_NEAREST)
+            if out_crop.shape[0] != nn or out_crop.shape[1] != nn:
+                out_crop = crop_or_pad_slice_to_size(out_crop, nn, nn)
             mask_seg_cropped.append(out_crop.astype(np.uint8))
             # scar_cropped
             scarcrop = crop_or_pad_slice_to_size_specific_point((a+b)*a,lenn,lenn,cx,cy)
@@ -363,6 +448,8 @@ for i in range(3, len(art_crop)-3):
                 scarcrop = crop_or_pad_slice_to_size(scarcrop, nn, nn)
             elif lenn > nn:
                 scarcrop = cv2.resize(scarcrop, (nn, nn), interpolation=cv2.INTER_NEAREST)
+            if scarcrop.shape[0] != nn or scarcrop.shape[1] != nn:
+                scarcrop = crop_or_pad_slice_to_size(scarcrop, nn, nn)
             scarcrop = scarcrop.astype(np.uint8)
             scar_cropped.append(scarcrop)
             # % scar
@@ -377,6 +464,8 @@ for i in range(3, len(art_crop)-3):
                 segcrop = crop_or_pad_slice_to_size(segcrop, nn, nn)
             elif lenn > nn:
                 segcrop = cv2.resize(segcrop, (nn, nn), interpolation=cv2.INTER_NEAREST)
+            if segcrop.shape[0] != nn or segcrop.shape[1] != nn:
+                segcrop = crop_or_pad_slice_to_size(segcrop, nn, nn)
             seg_cropped.append(segcrop.astype(np.float32))
             #mask myo
             mask_myo.append(mask.astype(np.uint8))
@@ -401,8 +490,8 @@ hdf5_file.create_dataset('myo', [len(myo)] + [n1, n1], dtype=np.float32)
 hdf5_file.create_dataset('mask_myo', [len(mask_myo)] + [n1, n1], dtype=np.uint8)
 hdf5_file.create_dataset('segments', [len(segments)] + [n1, n1], dtype=np.float32)
 hdf5_file.create_dataset('mask_segments', [len(mask_segments)] + [n1, n1], dtype=np.uint8)
-hdf5_file.create_dataset('seg_cropped', [len(segments)] + [n2, n2], dtype=np.float32)
-hdf5_file.create_dataset('mask_seg_cropped', [len(mask_segments)] + [n2, n2], dtype=np.uint8)
+hdf5_file.create_dataset('seg_cropped', [len(seg_cropped)] + [n2, n2], dtype=np.float32)
+hdf5_file.create_dataset('mask_seg_cropped', [len(mask_seg_cropped)] + [n2, n2], dtype=np.uint8)
 hdf5_file.create_dataset('AHA', (len(AHA),), dtype=np.uint8)
 hdf5_file.create_dataset('scar', [len(scar)] + [n1, n1], dtype=np.uint8)
 hdf5_file.create_dataset('mask_segment_scar', [len(mask_segment_scar)] + [n1, n1], dtype=np.uint8)
