@@ -1,3 +1,9 @@
+"""
+Created on Wed Jan 19 09:24:44 2022
+
+@author: Marco Penso
+"""
+
 import scipy
 import scipy.io
 import os
@@ -10,6 +16,21 @@ import math
 import random
 import pydicom
 
+def standardize_image(image, mask):
+    '''
+    make image zero mean and unit standard deviation
+    '''
+    px = []
+    coor = np.where(mask == 1)
+    for ii in range(len(coor[0])):
+        px.append(image[coor[0][ii],coor[1][ii]])
+    px = np.asarray(px)
+    img_o = np.float32(image.copy())
+    m = np.mean(px)
+    s = np.std(px)
+    return np.divide((img_o - m), s)
+    
+    
 path = r'F:/CT-tesi/Pre-proc'
 
 paz = []
@@ -29,13 +50,15 @@ for paz in os.listdir(path):
     
     for i in range(n_file):
         if data['scar_area'][i] > 10:
-            segs.append(data['seg_cropped'][i])
+            img = standardize_image(data['seg_cropped'][i], data['mask_seg_cropped'][i])
+            segs.append(img)
             out.append(1)
             paz.append(data['paz'][i])
             count_1 += 1
     for i in range(n_file):
         if data['scar_area'][random_indices[i]] == 0:
-            segs.append(data['seg_cropped'][random_indices[i]])
+            img = standardize_image(data['seg_cropped'][random_indices[i]], data['mask_seg_cropped'][random_indices[i]])
+            segs.append()
             out.append(0)
             paz.append(data['paz'][random_indices[i]])
             count_0 += 1
