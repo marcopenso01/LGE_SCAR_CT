@@ -78,27 +78,17 @@ for b_i in range(5):
         #data.keys()
         n_file = len(data['myo'])
         
-        random_indices = np.arange(n_file)
-        np.random.shuffle(random_indices)
-        count_1 = 0
-        count_0 = 0
-        
         for i in range(n_file):
-            if data['scar_area'][i] > 10:
-                img = standardize_image(data['seg_cropped'][i], data['mask_seg_cropped'][i])
-                segs.append(img)
-                out.append(1)
+            if data['AHA'][i] == 1:
+                if data['scar_area'][i] > 10:
+                    img = standardize_image(data['seg_cropped'][i], data['mask_seg_cropped'][i])
+                    segs_test.append(img)
+                    out_test.append(1)
+                elif data['scar_area'][i] == 0:
+                    img = standardize_image(data['seg_cropped'][i], data['mask_seg_cropped'][i])
+                    segs_test.append(img)
+                    out_test.append(0)
                 paz.append(data['paz'][i])
-                count_1 += 1
-        for i in range(n_file):
-            if data['scar_area'][random_indices[i]] == 0:
-                img = standardize_image(data['seg_cropped'][random_indices[i]], data['mask_seg_cropped'][random_indices[i]])
-                segs.append(img)
-                out.append(0)
-                paz.append(data['paz'][random_indices[i]])
-                count_0 += 1
-            if count_0 >= count_1:
-                break
                 
         data.close()
     
