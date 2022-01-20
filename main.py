@@ -22,7 +22,7 @@ def makefolder(folder):
 
 
 directory = 'F:\CT-tesi\data'
-output_folder = os.path.join(directory, 'fold0')
+output_folder = os.path.join(directory, 'prova1', 'fold0')
 if not os.path.exists(output_folder):
     makefolder(output_folder)
 
