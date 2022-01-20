@@ -39,3 +39,6 @@ test_generator = test_datagen.flow(test_images, batch_size=1)
 
 model = get_model()
 print('training started...')
+history = model.fit(train_generator, epochs = 100, validation_data = valid_generator, verbose = 1, callbacks=[tensorboard])
+print('training done...')
+
