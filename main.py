@@ -84,7 +84,7 @@ plt.plot( p, results.history["val_loss"][p], marker="x", color="r", label="best 
 plt.xlabel("Epochs", fontsize=16)
 plt.ylabel("Loss", fontsize=16)
 plt.legend();
-plt.savefig(os.path.join(output_folder+'Loss'))
+plt.savefig(os.path.join(output_folder,'Loss'))
 
 plt.figure(figsize=(8, 8))
 plt.grid(False)
@@ -100,6 +100,6 @@ plt.savefig(os.path.join(output_folder,'Accuracy'))
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 TESTING AND EVALUATING THE MODEL
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-print('-' * 30)
+print('-' * 50)
 print('Testing')
 print('Loading saved weights...')
