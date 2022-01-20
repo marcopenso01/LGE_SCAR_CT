@@ -1,11 +1,11 @@
 import numpy as np
 import math
-from model import get_model
 from matplotlib import pyplot as plt
 import cv2
 import os
 import h5py
 import tensorflow as 
+import model_zoo as model_zoo
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 
@@ -65,7 +65,7 @@ callbacks=[EarlyStopping(patience=15,verbose=1),\
                 ModelCheckpoint('modelName.h5'.format(epochs),verbose=1, save_best_only=True,\
                                 save_weights_only=False)
 
-model = get_model()
+model = model_zoo.get_model()
 #model.summary()
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics = ['accuracy',
                                                                       tf.keras.metrics.AUC()])
