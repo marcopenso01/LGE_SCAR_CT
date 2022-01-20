@@ -61,7 +61,7 @@ callbacks=[EarlyStopping(patience=15,verbose=1),\
 
 model = get_model()
 print('training started...')
-history = model.fit(train_generator, epochs = 100, validation_data = valid_generator, verbose = 1, callbacks=callbacks)
+history = model.fit(train_generator, epochs = 200, validation_data = valid_generator, verbose = 1, callbacks=callbacks)
 print('Model correctly trained and saved')  
 
 plt.figure(figsize=(8, 8))
