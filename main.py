@@ -31,9 +31,9 @@ train_images = data['segs_tr'][()]
 train_labels = data['out_tr'][()]
 val_images = data['segs_val'][()]
 val_labels = data['out_val'][()]
-test_images = data['paz_test'][()]
+test_images = data['segs_test'][()]
 test_labels = data['out_test'][()]
-test_patient = data['out_test'][()]
+test_patient = data['paz_test'][()]
 data.close()
 print('training data', len(train_images), train_images[0].shape)
 print('validation data', len(val_images), val_images[0].shape)
