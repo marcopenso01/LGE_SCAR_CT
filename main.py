@@ -1,6 +1,7 @@
 import numpy as np
 import math
 from matplotlib import pyplot as plt
+from sklearn import metrics
 import cv2
 import os
 import h5py
@@ -42,7 +43,6 @@ img_size = train_images[0].shape[0]
 
 train_images = np.expand_dims(train_images, axis = -1)
 val_images = np.expand_dims(val_images, axis = -1)
-test_images = np.expand_dims(test_images, axis = -1)
 
 train_datagen = ImageDataGenerator(
         rotation_range=40,
@@ -97,9 +97,77 @@ plt.ylabel("Accuracy", fontsize=16)
 plt.legend();
 plt.savefig(os.path.join(output_folder,'Accuracy'))
 
+
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 TESTING AND EVALUATING THE MODEL
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 print('-' * 50)
 print('Testing')
+print('Testing data', len(test_images), test_images[0].shape)
+test_images = np.expand_dims(test_images, axis = -1)
 print('Loading saved weights...')
+model = tf.keras.models.load_model(os.path.join(output_folder,'model.h5'))
+prediction = model.predict(test_images)
+
+# apply threshold to positive probabilities to create labels
+def to_labels(pos_probs, threshold):
+	return (pos_probs >= threshold).astype('int')
+ 
+def adjusted_classes(y_scores, t):
+    """
+    This function adjusts class predictions based on the prediction threshold (t).
+    Will only work for binary classification problems.
+    """
+    return [1 if y >= t else 0 for y in y_scores]
+
+
+# calculate roc curves
+fpr, tpr, thresholds = metrics.roc_curve(test_labels, prediction, pos_label=1)
+# plot the roc curve for the model
+plt.plot([0,1], [0,1], linestyle='--', label='No Skill')
+plt.plot(fpr, tpr, marker='.', label='CNN')
+# axis labels
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.legend()
+# show the plot
+plt.show()
+
+# define thresholds
+thresholds = np.arange(0, 1, 0.001)
+# evaluate each threshold
+scores = [metrics.f1_score(test_labels, to_labels(prediction, t)) for t in thresholds]
+# get best threshold
+ix = np.argmax(scores)
+print('Threshold=%.3f, F-Score=%.5f' % (thresholds[ix], scores[ix]))
+pred_adj = adjusted_classes(prediction, thresholds[ix])
+# precision
+precision = metrics.precision_score(test_labels, pred_adj)
+print('Precision: %.2f' % precision)
+# recall
+recall = metrics.recall_score(test_labels, pred_adj)
+print('Recall: %.2f' % recall)
+# f1
+f1 = metrics.f1_score(test_labels, pred_adj)
+print('f1: %.2f' % f1)
+# ROC AUC
+aucc = metrics.roc_auc_score(test_labels, prediction)
+print('ROC AUC: %f' % aucc)
+
+print(metrics.classification_report(test_labels, pred_adj))
+
+CM = metrics.confusion_matrix(test_labels, pred_adj)
+metrics.ConfusionMatrixDisplay.from_predictions(test_labels, pred_adj)
+plt.show()
+TN = CM[0][0]
+print('true negative:', TN)
+FN = CM[1][0]
+print('false negative:', FN)
+TP = CM[1][1]
+print('true positive:', TP)
+FP = CM[0][1]
+print('false positive:', FP)
+print('Precision or Pos predictive value: %.2f' % (TP/(TP+FP)))
+print('Recall: %.2f' % (TP/(TP+FN)))
+print('Specificity: %.2f' % (TN/(TN+FP)))
+print('Neg predictive value: %.2f' % (TN/(FN+TN)))
