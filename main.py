@@ -38,6 +38,12 @@ data.close()
 print('training data', len(train_images), train_images[0].shape)
 print('validation data', len(val_images), val_images[0].shape)
 
+img_size = train_images[0].shape[0]
+
+train_images = np.expand_dims(train_images, axis = -1)
+val_images = np.expand_dims(val_images, axis = -1)
+test_images = np.expand_dims(test_images, axis = -1)
+
 train_datagen = ImageDataGenerator(
         rotation_range=40,
         zoom_range=0.1,
@@ -60,6 +66,10 @@ callbacks=[EarlyStopping(patience=15,verbose=1),\
                                 save_weights_only=False)
 
 model = get_model()
+#model.summary()
+model.compile(loss='binary_crossentropy', optimizer='adam', metrics = ['accuracy',
+                                                                      tf.keras.metrics.AUC()])
+print('model prepared...')
 print('training started...')
 history = model.fit(train_generator, epochs = 200, validation_data = valid_generator, verbose = 1, callbacks=callbacks)
 print('Model correctly trained and saved')  
