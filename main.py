@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 import cv2
 import os
 import h5py
-import tensorflow as 
+import tensorflow as tf
 import model_zoo as model_zoo
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
@@ -58,12 +58,12 @@ test_datagen = ImageDataGenerator()
 batch_size = 8
 train_generator = train_datagen.flow(train_images, train_labels, batch_size=batch_size)
 valid_generator = train_datagen.flow(val_images, val_labels, batch_size=batch_size)
-test_generator = test_datagen.flow(test_images, batch_size=1)
+#test_generator = test_datagen.flow(test_images, batch_size=1)
 
 callbacks=[EarlyStopping(patience=15,verbose=1),\
             ReduceLROnPlateau(factor=0.1, patience=5, min_lr=0.000001,verbose=1),\
-                ModelCheckpoint('modelName.h5'.format(epochs),verbose=1, save_best_only=True,\
-                                save_weights_only=False)
+                ModelCheckpoint(os.path.join(output_folder,'model.h5'),verbose=1, save_best_only=True,\
+                                save_weights_only=False)]
 
 model = model_zoo.get_model()
 #model.summary()
@@ -71,7 +71,7 @@ model.compile(loss='binary_crossentropy', optimizer='adam', metrics = ['accuracy
                                                                       tf.keras.metrics.AUC()])
 print('model prepared...')
 print('training started...')
-history = model.fit(train_generator, epochs = 200, validation_data = valid_generator, verbose = 1, callbacks=callbacks)
+results = model.fit(train_generator, epochs = 200, validation_data = valid_generator, verbose = 1, callbacks=callbacks)
 print('Model correctly trained and saved')  
 
 plt.figure(figsize=(8, 8))
@@ -84,7 +84,7 @@ plt.plot( p, results.history["val_loss"][p], marker="x", color="r", label="best 
 plt.xlabel("Epochs", fontsize=16)
 plt.ylabel("Loss", fontsize=16)
 plt.legend();
-plt.savefig(output_folder+'Loss')
+plt.savefig(os.path.join(output_folder+'Loss'))
 
 plt.figure(figsize=(8, 8))
 plt.grid(False)
@@ -95,7 +95,7 @@ plt.plot( p, results.history["val_accuracy"][p], marker="x", color="r", label="b
 plt.xlabel("Epochs", fontsize=16)
 plt.ylabel("Accuracy", fontsize=16)
 plt.legend();
-plt.savefig(output_folder+'Accuracy')
+plt.savefig(os.path.join(output_folder,'Accuracy'))
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 TESTING AND EVALUATING THE MODEL
