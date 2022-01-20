@@ -13,28 +13,22 @@ from tensorflow.keras.applications import InceptionResNetV2
 
 def get_model():
     model = tf.keras.Sequential()
-    model.add(Conv2D(32, kernel_size = (3, 3), activation='relu', kernel_initializer=initializer, input_shape=(85,85,1)))
+    model.add(Conv2D(32, kernel_size = (3, 3), activation='relu', padding="same", kernel_initializer=initializer, input_shape=(85,85,1)))
     model.add(MaxPooling2D(pool_size=(2,2)))
     model.add(BatchNormalization())
     
-    model.add(Conv2D(64, kernel_size=(3,3), activation='relu', kernel_initializer=initializer))
+    model.add(Conv2D(64, kernel_size=(3,3), activation='relu', padding="same", kernel_initializer=initializer))
     model.add(MaxPooling2D(pool_size=(2,2)))
     model.add(BatchNormalization())
     
-    
-    model.add(Conv2D(96, kernel_size=(3,3), activation='relu', kernel_initializer=initializer))
+    model.add(Conv2D(96, kernel_size=(3,3), activation='relu', padding="same", kernel_initializer=initializer))
     model.add(MaxPooling2D(pool_size=(2,2)))
     model.add(BatchNormalization())
     
-    model.add(Conv2D(96, kernel_size=(3,3), activation='relu', kernel_initializer=initializer))
+    model.add(Conv2D(96, kernel_size=(3,3), activation='relu', padding="same", kernel_initializer=initializer))
     model.add(MaxPooling2D(pool_size=(2,2)))
     model.add(BatchNormalization())
     model.add(Dropout(0.2)) ## 
-    
-    model.add(Conv2D(64, kernel_size=(3,3), activation='relu', kernel_initializer=initializer))
-    model.add(MaxPooling2D(pool_size=(2,2)))
-    model.add(BatchNormalization())
-    model.add(Dropout(0.2))
     
     model.add(Flatten())
     model.add(Dense(256, activation='relu', kernel_initializer=initializer))
