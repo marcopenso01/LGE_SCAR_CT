@@ -49,6 +49,12 @@ def VGG16_model():
                        include_top = False,
                        weights = 'imagenet')
     base_model.trainable = False
+    '''
+    for layer in base_model.layers[:-2]:
+        layer.trainable = False
+    for layer in base_model.layers[-2:]:
+        layer.trainable = True
+    '''
     
     x = Flatten()(base_model.output)
     x = Dense(256, activation='relu',kernel_initializer=initializer)(x)
