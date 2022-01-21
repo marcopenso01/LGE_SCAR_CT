@@ -53,9 +53,6 @@ train_images = data['segs_tr'][()]
 train_labels = data['out_tr'][()]
 val_images = data['segs_val'][()]
 val_labels = data['out_val'][()]
-test_images = data['segs_test'][()]
-test_labels = data['out_test'][()]
-test_patient = data['paz_test'][()]
 data.close()
 print('training data', len(train_images), train_images[0].shape)
 print('validation data', len(val_images), val_images[0].shape)
@@ -126,11 +123,22 @@ plt.legend();
 plt.savefig(os.path.join(output_folder,'Accuracy'),dpi=300)
 plt.close()
 
+# free memory
+del train_images
+del train_labels
+del val_images
+del val_labels
+
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 TESTING AND EVALUATING THE MODEL
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 print('-' * 50)
 print('Testing')
+data = h5py.File(os.path.join(directory, 'tac_fold0.hdf5'), 'r')
+test_images = data['segs_test'][()]
+test_labels = data['out_test'][()]
+test_patient = data['paz_test'][()]
+data.close()
 print('Testing data', len(test_images), test_images[0].shape)
 print_txt(output_folder, ['\nTesting data %d' % len(test_images)])
 test_images = np.expand_dims(test_images, axis = -1)
@@ -210,3 +218,6 @@ print_txt(output_folder, ['\nRecall: %.2f' % (TP/(TP+FN))])
 print_txt(output_folder, ['\nSpecificity: %.2f' % (TN/(TN+FP))])
 #print('Neg predictive value: %.2f' % (TN/(FN+TN)))
 print_txt(output_folder, ['\nNeg predictive value: %.2f' % (TN/(FN+TN))])
+
+del test_images
+del test_labels
