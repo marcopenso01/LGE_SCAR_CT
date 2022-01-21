@@ -78,7 +78,7 @@ train_datagen = ImageDataGenerator(
 
 test_datagen = ImageDataGenerator()
 
-batch_size = 8
+batch_size = 32
 train_generator = train_datagen.flow(train_images, train_labels, batch_size=batch_size)
 valid_generator = train_datagen.flow(val_images, val_labels, batch_size=batch_size)
 #test_generator = test_datagen.flow(test_images, batch_size=1)
@@ -97,7 +97,7 @@ print('training started...')
 results = model.fit(train_generator, epochs = 200, validation_data = valid_generator, verbose = 1, callbacks=callbacks)
 print('Model correctly trained and saved')  
 
-#plt.figure(figsize=(8, 8))
+plt.figure(figsize=(8, 8))
 plt.grid(False)
 plt.title("Learning curve LOSS", fontsize=25)
 plt.plot(results.history["loss"], label="Loss")
@@ -108,8 +108,9 @@ plt.xlabel("Epochs", fontsize=16)
 plt.ylabel("Loss", fontsize=16)
 plt.legend();
 plt.savefig(os.path.join(output_folder,'Loss'), dpi=300)
+plt.close()
 
-#plt.figure(figsize=(8, 8))
+plt.figure(figsize=(8, 8))
 plt.grid(False)
 plt.title("Learning curve ACCURACY", fontsize=25)
 plt.plot(results.history["accuracy"], label="Accuracy")
@@ -119,7 +120,7 @@ plt.xlabel("Epochs", fontsize=16)
 plt.ylabel("Accuracy", fontsize=16)
 plt.legend();
 plt.savefig(os.path.join(output_folder,'Accuracy'),dpi=300)
-
+plt.close()
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 TESTING AND EVALUATING THE MODEL
@@ -136,9 +137,11 @@ prediction = model.predict(test_images)
 
 # calculate roc curves
 fpr, tpr, thresholds = metrics.roc_curve(test_labels, prediction, pos_label=1)
+aucc = metrics.roc_auc_score(test_labels, prediction)
 # plot the roc curve for the model
+plt.figure()
 plt.plot([0,1], [0,1], linestyle='--', label='No Skill')
-plt.plot(fpr, tpr, marker='.', label='CNN')
+plt.plot(fpr, tpr, marker='.', label="ROC curve (area = %0.2f)" % aucc)
 # axis labels
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
@@ -146,6 +149,7 @@ plt.legend()
 # show the plot
 #plt.show()
 plt.savefig(os.path.join(output_folder,'AUC'), dpi=300)
+plt.close()
 
 
 # define thresholds
@@ -154,37 +158,50 @@ thresholds = np.arange(0, 1, 0.001)
 scores = [metrics.f1_score(test_labels, to_labels(prediction, t)) for t in thresholds]
 # get best threshold
 ix = np.argmax(scores)
-print('Threshold=%.3f, F-Score=%.5f' % (thresholds[ix], scores[ix]))
+#print('Threshold=%.3f, F-Score=%.5f' % (thresholds[ix], scores[ix]))
+print_txt(output_folder, ['\nThreshold=%.3f, F-Score=%.5f' % (thresholds[ix], scores[ix])])
 pred_adj = adjusted_classes(prediction, thresholds[ix])
 # precision
 precision = metrics.precision_score(test_labels, pred_adj)
-print('Precision: %.2f' % precision)
+#print('Precision: %.2f' % precision)
+print_txt(output_folder, ['\nPrecision: %.2f' % precision])
 # recall
 recall = metrics.recall_score(test_labels, pred_adj)
-print('Recall: %.2f' % recall)
+#print('Recall: %.2f' % recall)
+print_txt(output_folder, ['\nRecall: %.2f' % recall])
 # f1
 f1 = metrics.f1_score(test_labels, pred_adj)
-print('f1: %.2f' % f1)
+#print('f1: %.2f' % f1)
+print_txt(output_folder, ['\nf1: %.2f' % f1])
 # ROC AUC
-aucc = metrics.roc_auc_score(test_labels, prediction)
-print('ROC AUC: %f' % aucc)
+#print('ROC AUC: %f' % aucc)
+print_txt(output_folder, ['\nROC AUC: %f' % aucc])
 
 print(metrics.classification_report(test_labels, pred_adj))
 
 CM = metrics.confusion_matrix(test_labels, pred_adj)
 metrics.ConfusionMatrixDisplay.from_predictions(test_labels, pred_adj)
 #plt.show()
-plt.savefig(os.path.join(output_folder,'True_table'), dpi=300)
+plt.savefig(os.path.join(output_folder,'Conf_matrix'), dpi=300)
+plt.close()
 
 TN = CM[0][0]
-print('true negative:', TN)
+#print('true negative:', TN)
+print_txt(output_folder, ['\ntrue negative: %d' % TN])
 FN = CM[1][0]
-print('false negative:', FN)
+#print('false negative:', FN)
+print_txt(output_folder, ['\nfalse negative: %d' % FN])
 TP = CM[1][1]
-print('true positive:', TP)
+#print('true positive:', TP)
+print_txt(output_folder, ['\ntrue positive: %d' % TP])
 FP = CM[0][1]
-print('false positive:', FP)
-print('Precision or Pos predictive value: %.2f' % (TP/(TP+FP)))
-print('Recall: %.2f' % (TP/(TP+FN)))
-print('Specificity: %.2f' % (TN/(TN+FP)))
-print('Neg predictive value: %.2f' % (TN/(FN+TN)))
+#print('false positive:', FP)
+print_txt(output_folder, ['\nfalse positive: %d' % FP])
+#print('Precision or Pos predictive value: %.2f' % (TP/(TP+FP)))
+print_txt(output_folder, ['\nPrecision or Pos predictive value: %.2f' % (TP/(TP+FP))])
+#print('Recall: %.2f' % (TP/(TP+FN)))
+print_txt(output_folder, ['\nRecall: %.2f' % (TP/(TP+FN))])
+#print('Specificity: %.2f' % (TN/(TN+FP)))
+print_txt(output_folder, ['\nSpecificity: %.2f' % (TN/(TN+FP))])
+#print('Neg predictive value: %.2f' % (TN/(FN+TN)))
+print_txt(output_folder, ['\nNeg predictive value: %.2f' % (TN/(FN+TN))])
