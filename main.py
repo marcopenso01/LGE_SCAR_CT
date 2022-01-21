@@ -90,6 +90,10 @@ callbacks=[EarlyStopping(patience=15,verbose=1),\
 
 model = model_zoo.get_model()
 #model.summary()
+with open(out_file, "a") as text_file:
+    # Pass the file handle in as a lambda function to make it callable
+    model.summary(print_fn=lambda x: text_file.write(x + '\n'))
+	
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics = ['accuracy',
                                                                       tf.keras.metrics.AUC()])
 print('model prepared...')
@@ -177,7 +181,8 @@ print_txt(output_folder, ['\nf1: %.2f' % f1])
 #print('ROC AUC: %f' % aucc)
 print_txt(output_folder, ['\nROC AUC: %f' % aucc])
 
-print(metrics.classification_report(test_labels, pred_adj))
+#print(metrics.classification_report(test_labels, pred_adj))
+print_txt(output_folder, ['\n\n %s \n\n' % metrics.classification_report(test_labels, pred_adj)])
 
 CM = metrics.confusion_matrix(test_labels, pred_adj)
 metrics.ConfusionMatrixDisplay.from_predictions(test_labels, pred_adj)
