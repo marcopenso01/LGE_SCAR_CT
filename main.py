@@ -219,5 +219,12 @@ print_txt(output_folder, ['\nSpecificity: %.2f' % (TN/(TN+FP))])
 #print('Neg predictive value: %.2f' % (TN/(FN+TN)))
 print_txt(output_folder, ['\nNeg predictive value: %.2f' % (TN/(FN+TN))])
 
+with open(out_file, "a") as text_file:
+    text_file.write('\n----- Prediction ----- \n')
+    text_file.write('patient       pred_class       probability\n')
+    for ii in range(len(prediction)):
+
+      text_file.write('%d             %d                %.3f\n' % (test_patient[ii], test_labels[ii], prediction[ii]))
+
 del test_images
 del test_labels
