@@ -64,7 +64,7 @@ for f in glob.glob(os.path.join(directory, "*.hdf5")):
     print('training data', len(train_images), train_images[0].shape)
     print('validation data', len(val_images), val_images[0].shape)
     print_txt(output_folder, ['\ntraining data %d' % len(train_images)])
-    print_txt(output_folder, ['\nvalidation data %d' % len(val_images)])
+    print_txt(output_folder, ['\nvalidation data %d\n\n' % len(val_images)])
 
     img_size = train_images[0].shape[0]
 
@@ -222,7 +222,7 @@ for f in glob.glob(os.path.join(directory, "*.hdf5")):
     #print('Specificity: %.2f' % (TN/(TN+FP)))
     print_txt(output_folder, ['\nSpecificity: %.2f' % (TN/(TN+FP))])
     #print('Neg predictive value: %.2f' % (TN/(FN+TN)))
-    print_txt(output_folder, ['\nNeg predictive value: %.2f' % (TN/(FN+TN))])
+    print_txt(output_folder, ['\nNeg predictive value: %.2f\n\n' % (TN/(FN+TN))])
 
     with open(out_file, "a") as text_file:
         text_file.write('\n----- Prediction ----- \n')
