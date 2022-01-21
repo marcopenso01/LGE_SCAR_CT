@@ -21,6 +21,17 @@ def makefolder(folder):
         return True
     return False
 
+# apply threshold to positive probabilities to create labels
+def to_labels(pos_probs, threshold):
+	return (pos_probs >= threshold).astype('int')
+ 
+def adjusted_classes(y_scores, t):
+    """
+    This function adjusts class predictions based on the prediction threshold (t).
+    Will only work for binary classification problems.
+    """
+    return [1 if y >= t else 0 for y in y_scores]
+
 
 directory = 'F:\CT-tesi\data'
 output_folder = os.path.join(directory, 'prova1', 'fold0')
@@ -74,7 +85,7 @@ print('training started...')
 results = model.fit(train_generator, epochs = 200, validation_data = valid_generator, verbose = 1, callbacks=callbacks)
 print('Model correctly trained and saved')  
 
-plt.figure(figsize=(8, 8))
+#plt.figure(figsize=(8, 8))
 plt.grid(False)
 plt.title("Learning curve LOSS", fontsize=25)
 plt.plot(results.history["loss"], label="Loss")
@@ -84,9 +95,9 @@ plt.plot( p, results.history["val_loss"][p], marker="x", color="r", label="best 
 plt.xlabel("Epochs", fontsize=16)
 plt.ylabel("Loss", fontsize=16)
 plt.legend();
-plt.savefig(os.path.join(output_folder,'Loss'))
+plt.savefig(os.path.join(output_folder,'Loss'), dpi=300)
 
-plt.figure(figsize=(8, 8))
+#plt.figure(figsize=(8, 8))
 plt.grid(False)
 plt.title("Learning curve ACCURACY", fontsize=25)
 plt.plot(results.history["accuracy"], label="Accuracy")
@@ -95,7 +106,7 @@ plt.plot( p, results.history["val_accuracy"][p], marker="x", color="r", label="b
 plt.xlabel("Epochs", fontsize=16)
 plt.ylabel("Accuracy", fontsize=16)
 plt.legend();
-plt.savefig(os.path.join(output_folder,'Accuracy'))
+plt.savefig(os.path.join(output_folder,'Accuracy'),dpi=300)
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -109,17 +120,6 @@ print('Loading saved weights...')
 model = tf.keras.models.load_model(os.path.join(output_folder,'model.h5'))
 prediction = model.predict(test_images)
 
-# apply threshold to positive probabilities to create labels
-def to_labels(pos_probs, threshold):
-	return (pos_probs >= threshold).astype('int')
- 
-def adjusted_classes(y_scores, t):
-    """
-    This function adjusts class predictions based on the prediction threshold (t).
-    Will only work for binary classification problems.
-    """
-    return [1 if y >= t else 0 for y in y_scores]
-
 
 # calculate roc curves
 fpr, tpr, thresholds = metrics.roc_curve(test_labels, prediction, pos_label=1)
@@ -131,7 +131,9 @@ plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
 plt.legend()
 # show the plot
-plt.show()
+#plt.show()
+plt.savefig(os.path.join(output_folder,'AUC'), dpi=300)
+
 
 # define thresholds
 thresholds = np.arange(0, 1, 0.001)
@@ -158,7 +160,9 @@ print(metrics.classification_report(test_labels, pred_adj))
 
 CM = metrics.confusion_matrix(test_labels, pred_adj)
 metrics.ConfusionMatrixDisplay.from_predictions(test_labels, pred_adj)
-plt.show()
+#plt.show()
+plt.savefig(os.path.join(output_folder,'True_table'), dpi=300)
+
 TN = CM[0][0]
 print('true negative:', TN)
 FN = CM[1][0]
