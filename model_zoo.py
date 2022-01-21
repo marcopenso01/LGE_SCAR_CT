@@ -1,9 +1,9 @@
 import tensorflow as tf
 
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten, BatchNormalization
+from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten, BatchNormalization, Concatenate
 from tensorflow.keras.layers import Conv2D, MaxPooling2D
-from tensorflow.keras import Model 
+from tensorflow.keras import Model, Input
 initializer = tf.keras.initializers.GlorotNormal()
 import os
 
@@ -50,13 +50,13 @@ def VGG16_model():
                        weights = 'imagenet')
     base_model.trainable = False
     
-    x = layers.Flatten()(base_model.output)
-    x = layers.Dense(256, activation='relu',kernel_initializer=initializer)(x)
-    x = layers.Dropout(0.5)(x)
-    x = layers.Dense(128, activation='relu',kernel_initializer=initializer)(x)
-    x = layers.Dropout(0.5)(x)
+    x = Flatten()(base_model.output)
+    x = Dense(256, activation='relu',kernel_initializer=initializer)(x)
+    x = Dropout(0.5)(x)
+    x = Dense(128, activation='relu',kernel_initializer=initializer)(x)
+    x = Dropout(0.5)(x)
     # Add a final sigmoid layer with 1 node for classification output
-    output  = layers.Dense(1, activation='sigmoid')(x)
+    output  = Dense(1, activation='sigmoid')(x)
 
     model = Model(base_model.input, output, name='VGG16')
     
@@ -74,15 +74,15 @@ def ResNet50V2_model():
                             weights = 'imagenet')
     base_model.trainable = False
     
-    x = layers.Flatten()(base_model.output)
-    x = layers.Dense(256, activation='relu',kernel_initializer=initializer)(x)
-    x = layers.Dropout(0.5)(x)
-    x = layers.Dense(128, activation='relu',kernel_initializer=initializer)(x)
-    x = layers.Dropout(0.5)(x)
+    x = Flatten()(base_model.output)
+    x = Dense(256, activation='relu',kernel_initializer=initializer)(x)
+    x = Dropout(0.5)(x)
+    x = Dense(128, activation='relu',kernel_initializer=initializer)(x)
+    x = Dropout(0.5)(x)
     # Add a final sigmoid layer with 1 node for classification output
-    output  = layers.Dense(1, activation='sigmoid')(x)
+    output  = Dense(1, activation='sigmoid')(x)
 
-    model = Model(base_model.input, output, name='VGG16')
+    model = Model(base_model.input, output, name='ResNet50V2')
     
     return model
 
@@ -98,14 +98,14 @@ def InceptionResNetV2_model():
                                    weights = 'imagenet')
     base_model.trainable = False
     
-    x = layers.Flatten()(base_model.output)
-    x = layers.Dense(256, activation='relu',kernel_initializer=initializer)(x)
-    x = layers.Dropout(0.5)(x)
-    x = layers.Dense(128, activation='relu',kernel_initializer=initializer)(x)
-    x = layers.Dropout(0.5)(x)
+    x = Flatten()(base_model.output)
+    x = Dense(256, activation='relu',kernel_initializer=initializer)(x)
+    x = Dropout(0.5)(x)
+    x = Dense(128, activation='relu',kernel_initializer=initializer)(x)
+    x = Dropout(0.5)(x)
     # Add a final sigmoid layer with 1 node for classification output
-    output  = layers.Dense(1, activation='sigmoid')(x)
+    output  = Dense(1, activation='sigmoid')(x)
 
-    model = Model(base_model.input, output, name='VGG16')
+    model = Model(base_model.input, output, name='InceptionResNetV2')
     
     return model
