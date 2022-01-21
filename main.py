@@ -32,11 +32,21 @@ def adjusted_classes(y_scores, t):
     """
     return [1 if y >= t else 0 for y in y_scores]
 
+def print_txt(output_dir, stringa):
+    out_file = os.path.join(output_dir, 'summary_report.txt')
+    with open(out_file, "a") as text_file:
+        text_file.writelines(stringa)
+
 
 directory = 'F:\CT-tesi\data'
 output_folder = os.path.join(directory, 'prova1', 'fold0')
 if not os.path.exists(output_folder):
     makefolder(output_folder)
+    out_file = os.path.join(output_folder, 'summary_report.txt')
+    with open(out_file, "w") as text_file:
+	text_file.write('\n\n--------------------------------------------------------------------------\n')
+	text_file.write('Model summary\n')
+	text_file.write('----------------------------------------------------------------------------\n\n')
 
 data = h5py.File(os.path.join(directory, 'tac_fold0.hdf5'), 'r')
 train_images = data['segs_tr'][()]
@@ -49,6 +59,8 @@ test_patient = data['paz_test'][()]
 data.close()
 print('training data', len(train_images), train_images[0].shape)
 print('validation data', len(val_images), val_images[0].shape)
+print_txt(output_folder, ['\ntraining data %d' % len(train_images)])
+print_txt(output_folder, ['\nvalidation data %d' % len(val_images)])
 
 img_size = train_images[0].shape[0]
 
@@ -115,6 +127,7 @@ TESTING AND EVALUATING THE MODEL
 print('-' * 50)
 print('Testing')
 print('Testing data', len(test_images), test_images[0].shape)
+print_txt(output_folder, ['\nTesting data %d' % len(test_images)])
 test_images = np.expand_dims(test_images, axis = -1)
 print('Loading saved weights...')
 model = tf.keras.models.load_model(os.path.join(output_folder,'model.h5'))
